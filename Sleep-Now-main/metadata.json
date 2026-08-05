@@ -1,0 +1,6 @@
+{
+  "name": "Insomnia 0",
+  "description": "Crononutrición y descanso circadiano inteligente. Aplicación personalizada para reprogramar tu descanso, registrar tu diario de sueño y diseñar tu alimentación nocturna.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

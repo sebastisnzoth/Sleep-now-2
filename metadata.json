@@ -1,0 +1,6 @@
+{
+  "name": "Sleep Now®",
+  "description": "Sistema de higiene del sueño, optimización del ritmo circadiano y reducción de ansiedad nocturna",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

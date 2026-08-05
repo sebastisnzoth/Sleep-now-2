@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global catch-all denial
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['userId', 'name']) &&
+        data.keys().size() <= 8 &&
+        data.userId is string && data.userId.size() <= 128 &&
+        data.name is string && data.name.size() <= 100 &&
+        (!data.keys().hasAny(['nightsOfCalm']) || data.nightsOfCalm is int) &&
+        (!data.keys().hasAny(['consistencyRate']) || data.consistencyRate is number) &&
+        (!data.keys().hasAny(['currentStreak']) || data.currentStreak is int);
+    }
+
+    function isValidSleepLog(data) {
+      return data.keys().hasAll(['id', 'userId', 'date', 'wakeEnergy']) &&
+        data.keys().size() <= 10 &&
+        data.id is string && data.id.size() <= 128 &&
+        data.userId is string && data.userId.size() <= 128 &&
+        data.date is string && data.date.size() <= 50 &&
+        data.wakeEnergy is int && data.wakeEnergy >= 1 && data.wakeEnergy <= 10 &&
+        (!data.keys().hasAny(['notes']) || (data.notes is string && data.notes.size() <= 1000)) &&
+        (!data.keys().hasAny(['complied321']) || data.complied321 is bool) &&
+        (!data.keys().hasAny(['statusLabel']) || (data.statusLabel is string && data.statusLabel.size() <= 50)) &&
+        (!data.keys().hasAny(['duration']) || (data.duration is string && data.duration.size() <= 50));
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(userId) && isValidUserProfile(request.resource.data) && request.resource.data.userId == userId;
+      allow update: if isOwner(userId) && isValidUserProfile(request.resource.data) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isOwner(userId);
+
+      match /sleepLogs/{logId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(logId) && isValidSleepLog(request.resource.data) && request.resource.data.userId == userId;
+        allow update: if isOwner(userId) && isValidSleepLog(request.resource.data) && request.resource.data.userId == resource.data.userId;
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

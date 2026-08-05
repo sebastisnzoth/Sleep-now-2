@@ -1,0 +1,45 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile and stats in Insomnio Cero",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 100 },
+        "memberSince": { "type": "string", "maxLength": 50 },
+        "nightsOfCalm": { "type": "integer" },
+        "consistencyRate": { "type": "number" },
+        "currentStreak": { "type": "integer" }
+      },
+      "required": ["userId", "name"]
+    },
+    "SleepLog": {
+      "title": "SleepLog",
+      "description": "Individual sleep log entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "dayNum": { "type": "integer" },
+        "date": { "type": "string", "maxLength": 50 },
+        "wakeEnergy": { "type": "integer" },
+        "complied321": { "type": "boolean" },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "statusLabel": { "type": "string", "maxLength": 50 },
+        "duration": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "userId", "date", "wakeEnergy"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "User profile document"
+    },
+    "/users/{userId}/sleepLogs/{logId}": {
+      "schema": { "$ref": "#/entities/SleepLog" },
+      "description": "User sleep logs subcollection"
+    }
+  }
+}
