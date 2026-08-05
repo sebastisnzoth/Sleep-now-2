@@ -1,16 +1,23 @@
 {
-  "name": "react-example",
+  "name": "sleep-now",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "build:web": "vite build",
     "start": "node dist/server.cjs",
     "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "android:add": "npm run build:web && npx cap add android",
+    "android:sync": "npm run build:web && npx cap sync android",
+    "android:open": "npx cap open android",
+    "android:run": "npm run android:sync && npx cap run android"
   },
   "dependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/core": "^7.4.3",
     "@google/genai": "^2.4.0",
     "@tailwindcss/vite": "^4.1.14",
     "@types/howler": "^2.2.13",
@@ -27,6 +34,7 @@
     "vite": "^6.2.3"
   },
   "devDependencies": {
+    "@capacitor/cli": "^7.4.3",
     "@types/express": "^4.17.21",
     "@types/node": "^22.14.0",
     "autoprefixer": "^10.4.21",
