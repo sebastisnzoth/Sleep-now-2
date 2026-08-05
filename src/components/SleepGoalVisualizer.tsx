@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { SleepLog } from "../types";
-import { Target, Clock, TrendingUp, Award, CheckCircle2, AlertCircle, SlidersHorizontal } from "lucide-react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, ReferenceLine, Cell } from "recharts";
+import { Target, Clock, TrendingUp, Award, CheckCircle2, AlertCircle, SlidersHorizontal, Activity } from "lucide-react";
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, ReferenceLine, CartesianGrid, Legend } from "recharts";
 
 interface SleepGoalVisualizerProps {
   logs: SleepLog[];
@@ -35,9 +35,10 @@ export default function SleepGoalVisualizer({ logs }: SleepGoalVisualizerProps) 
   const diffMinutes = Math.round(actualMinutes - plannedMinutes);
   const achievementPercent = Math.min(Math.round((actualMinutes / plannedMinutes) * 100), 150);
 
-  // Prepare chart data from logs (chronological order)
+  // Prepare chart data from logs (chronological order, last 7 days)
   const chartData = [...logs]
     .sort((a, b) => a.dayNum - b.dayNum)
+    .slice(-7)
     .map((log) => ({
       name: `Día ${log.dayNum} (${log.date})`,
       Real: parseDurationToHours(log.duration),
@@ -55,10 +56,10 @@ export default function SleepGoalVisualizer({ logs }: SleepGoalVisualizerProps) 
             <Target size={14} /> Análisis de Objetivo Circadiano
           </span>
           <h2 className="text-2xl font-extrabold tracking-tight text-[#f5f8fc] mt-1">
-            Duración Planificada vs. Real
+            Tendencia de Sueño: Planificado vs. Real
           </h2>
           <p className="text-sm text-[#9caec4] mt-0.5">
-            Comparativa basada en tus registros de sueño recientes frente a tu meta biológica.
+            Evolución de las horas dormidas durante la semana comparadas con tu meta biológica.
           </p>
         </div>
 
@@ -132,34 +133,47 @@ export default function SleepGoalVisualizer({ logs }: SleepGoalVisualizerProps) 
         </div>
       </div>
 
-      {/* Chart Visualizer */}
+      {/* Line Chart Visualizer */}
       <div className="bg-[#091524]/60 border border-[#abcfbe]/10 rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h4 className="text-sm font-bold text-[#f5f8fc] flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#7cc7ff]" /> Evolución Histórica: Plan vs. Real (Horas)
+            <Activity size={16} className="text-[#7cc7ff]" /> Gráfico de Tendencia: Horas Reales vs. Meta
           </h4>
-          <span className="text-xs text-[#9caec4]">Línea punteada = Meta ({plannedHours}h)</span>
+          <div className="flex items-center gap-3 text-xs text-[#9caec4]">
+            <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-[#7ee0c3] inline-block" /> Real</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-[#7cc7ff] inline-block opacity-70" /> Planificado</span>
+          </div>
         </div>
 
-        <div className="h-64 w-full pt-2">
+        <div className="h-72 w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <LineChart data={chartData} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(171,207,190,0.1)" />
               <XAxis dataKey="name" stroke="#9caec4" fontSize={11} tickLine={false} />
-              <YAxis stroke="#9caec4" fontSize={11} domain={[4, 12]} tickLine={false} />
+              <YAxis stroke="#9caec4" fontSize={11} domain={[4, 12]} tickLine={false} unit="h" />
               <Tooltip 
-                contentStyle={{ background: "#0f2138", borderColor: "rgba(124,199,255,0.2)", borderRadius: "12px", color: "#f5f8fc", fontSize: "12px" }}
-                formatter={(value: any) => [`${value} horas`, "Duración Real"]}
+                contentStyle={{ background: "#0f2138", borderColor: "rgba(124,199,255,0.2)", borderRadius: "12px", color: "#f5f8fc", fontSize: "12px", boxShadow: "0 10px 25px -5px rgba(0,0,0,0.5)" }}
+                formatter={(value: any, name: any) => [`${value} horas`, name === "Real" ? "Sueño Real" : "Meta Planificada"]}
               />
-              <Bar dataKey="Real" radius={[8, 8, 0, 0]}>
-                {chartData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={entry.Real >= plannedHours ? "#7ee0c3" : "#7cc7ff"} 
-                    opacity={0.85}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
+              <Line 
+                type="monotone" 
+                dataKey="Planificado" 
+                stroke="#7cc7ff" 
+                strokeWidth={2} 
+                strokeDasharray="5 5" 
+                dot={false}
+                name="Planificado"
+              />
+              <Line 
+                type="monotone" 
+                dataKey="Real" 
+                stroke="#7ee0c3" 
+                strokeWidth={3} 
+                activeDot={{ r: 7, fill: "#7ee0c3", stroke: "#0d1b2f", strokeWidth: 2 }} 
+                dot={{ r: 5, fill: "#7ee0c3", stroke: "#0d1b2f", strokeWidth: 2 }}
+                name="Real"
+              />
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
@@ -180,3 +194,4 @@ export default function SleepGoalVisualizer({ logs }: SleepGoalVisualizerProps) 
     </div>
   );
 }
+
